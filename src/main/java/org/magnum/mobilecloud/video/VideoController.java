@@ -18,21 +18,38 @@
 
 package org.magnum.mobilecloud.video;
 
-import javax.servlet.http.HttpServletResponse;
+import java.util.Collection;
 
 import org.magnum.mobilecloud.video.repository.Video;
+import org.magnum.mobilecloud.video.repository.VideoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+
+import retrofit.http.GET;
 
 @Controller
 public class VideoController {
 	
 
+	@Autowired
+	VideoRepository videos;
 	
+	/*
+	 * - Returns the list of videos that have been added to the server as JSON.
+	 * The list of videos should be persisted using Spring Data. The list of
+	 * Video objects should be able to be unmarshalled by the client into a
+	 * Collection<Video>. - The return content-type should be application/json,
+	 * which will be the default if you use @ResponseBody
+	 */
+	
+	@GET("/video")
+	public Collection<Video> getVideoList() {
+		//Collection<Video> videoList = videos.findCollection();
+		//return videoList;
+		return null;
+	}
+	
+
 
 
 	
