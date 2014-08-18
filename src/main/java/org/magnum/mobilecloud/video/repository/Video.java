@@ -1,5 +1,9 @@
 package org.magnum.mobilecloud.video.repository;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -107,6 +111,17 @@ public class Video {
 		} else {
 			return false;
 		}
+	}
+	
+	@ElementCollection
+	private Collection<Video> videoCollection = new ArrayList<Video>();
+
+	public Collection<Video> getVideoCollection() {
+		return videoCollection;
+	}
+
+	public void setVideoCollection(Collection<Video> videoCollection) {
+		this.videoCollection = videoCollection;
 	}
 
 }

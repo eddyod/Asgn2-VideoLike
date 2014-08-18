@@ -23,9 +23,15 @@ import java.util.Collection;
 import org.magnum.mobilecloud.video.repository.Video;
 import org.magnum.mobilecloud.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import retrofit.http.Body;
 import retrofit.http.GET;
+import retrofit.http.POST;
+import retrofit.http.Path;
 
 @Controller
 public class VideoController {
@@ -34,6 +40,12 @@ public class VideoController {
 	@Autowired
 	VideoRepository videos;
 	
+	Video video = new Video();
+	
+	
+	public static final String TITLE_PARAMETER = "title";	
+	public static final String DURATION_PARAMETER = "duration";
+
 	/*
 	 * - Returns the list of videos that have been added to the server as JSON.
 	 * The list of videos should be persisted using Spring Data. The list of
@@ -46,9 +58,101 @@ public class VideoController {
 	public Collection<Video> getVideoList() {
 		//Collection<Video> videoList = videos.findCollection();
 		//return videoList;
-		return null;
+		return video.getVideoCollection();
 	}
 	
+	/*
+	 * - The video metadata is provided as an application/json request body. The
+	 * JSON should generate a valid instance of the Video class when
+	 * deserialized by Spring's default Jackson library. - Returns the JSON
+	 * representation of the Video object that was stored along with any updates
+	 * to that object made by the server. - **_The server should store the Video
+	 * in a Spring Data JPA repository. If done properly, the repository should
+	 * handle generating ID's._** - A video should not have any likes when it is
+	 * initially created. - You will need to add one or more annotations to the
+	 * Video object in order for it to be persisted with JPA.
+	 */
+	@POST("/video")
+	public Video addVideo(@Body Video v) {
+		//Video video = videoRep.save(v);
+		//videos.save(v);
+		return v;
+	}
+
+	/*
+	 * Returns the video with the given id or 404 if the video is not found.
+	 */
+	@GET("/video/{id}")
+	public Video getVideoById(@Path("id") long id) {
+		//Video video = videoRep.findOne(id);
+		//return video;
+		return null;
+	}
+
+	/*
+	 * - Allows a user to like a video. Returns 200 Ok on success, 404 if the
+	 * video is not found, or 400 if the user has already liked the video. - The
+	 * service should should keep track of which users have liked a video and
+	 * prevent a user from liking a video twice. A POJO Video object is provided
+	 * for you and you will need to annotate and/or add to it in order to make
+	 * it persistable. - A user is only allowed to like a video once. If a user
+	 * tries to like a video a second time, the operation should fail and return
+	 * 400 Bad Request.
+	 */
+	@ResponseStatus(value = HttpStatus.OK)
+	@POST("/video/{id}/like")
+	public Void likeVideo(@Path("id") long id) {
+		return null;
+
+	}
+
+	/*
+	 * - Allows a user to unlike a video that he/she previously liked. Returns
+	 * 200 OK on success, 404 if the video is not found, and a 400 if the user
+	 * has not previously liked the specified video.
+	 */
+	@ResponseStatus(value = HttpStatus.OK)
+	@POST("/video/{id}/unlike")
+	public Void unlikeVideo(@Path("id") long id) {
+		return null;
+
+	}
+
+	/*
+	 * - Returns a list of the string usernames of the users that have liked the
+	 * specified video. If the video is not found, a 404 error should be
+	 * generated.
+	 */
+	@GET("/video/{id}/likedby")
+	public Collection<String> getUsersWhoLikedVideo(@Path("id") long id) {
+		return null;
+	}
+
+	/*
+	 * - Returns a list of videos whose titles match the given parameter or an
+	 * empty list if none are found.
+	 */
+	/*
+	@GET("/video/search/findByName?title={title}")
+	public Collection<Video> findByTitle(@Query(TITLE_PARAMETER) String title) {
+		//Collection<Video> videos = videoRep.findLike(title);
+		//return videos;
+		return null;
+	}
+	*/
+
+	/*
+	 * - Returns a list of videos whose durations are less than the given
+	 * parameter or an empty list if none are found.
+	 */
+	/*
+	@GET("/video/search/findByDurationLessThan?duration={duration}")
+	public Collection<Video> findByDurationLessThan(@Query(DURATION_PARAMETER) long duration) {
+		return null;
+	}
+	*/
+
+
 
 
 
