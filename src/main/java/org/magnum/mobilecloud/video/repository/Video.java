@@ -2,6 +2,8 @@ package org.magnum.mobilecloud.video.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -25,7 +27,7 @@ import com.google.common.base.Objects;
  */
 @Entity
 public class Video {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
@@ -112,7 +114,7 @@ public class Video {
 			return false;
 		}
 	}
-	
+
 	@ElementCollection
 	private Collection<Video> videoCollection = new ArrayList<Video>();
 
@@ -122,6 +124,28 @@ public class Video {
 
 	public void setVideoCollection(Collection<Video> videoCollection) {
 		this.videoCollection = videoCollection;
+	}
+
+	@ElementCollection
+	private Set<String> likesUsernames = new HashSet<String>();
+
+	public Set<String> getLikesUsernames() {
+		return likesUsernames;
+	}
+
+	public void setLikesUsernames(Set<String> likesUsernames) {
+		this.likesUsernames = likesUsernames;
+	}
+	
+	@ElementCollection
+	private Set<String> unlikesUsernames = new HashSet<String>();
+
+	public Set<String> getUnlikesUsernames() {
+		return unlikesUsernames;
+	}
+
+	public void setUnlikesUsernames(Set<String> unlikesUsernames) {
+		this.unlikesUsernames = unlikesUsernames;
 	}
 
 }
