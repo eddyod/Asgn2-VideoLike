@@ -31,42 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class VideoController {
 	
-	@RequestMapping(value = "/video", method = RequestMethod.GET)
-	public @ResponseBody Video getVideo(@RequestBody Video v) {
-		return v;
-	}
-	
-	@RequestMapping(value = "/video", method = RequestMethod.POST)
-	public @ResponseBody Video postVideo(@RequestBody Video v) {
-		return v;
-	}
-	
-	@RequestMapping(value = "/video/{id}", method = RequestMethod.GET)
-	public void getData(@PathVariable("id") long id, HttpServletResponse response) {
-	}
-	
-	
-	@RequestMapping(value = "/video/{id}/like", method = RequestMethod.POST)
-	public @ResponseBody Video postLike(@RequestBody Video v) {
-		return v;
-	}
-	
-	@RequestMapping(value = "/video/{id}/unlike", method = RequestMethod.POST)
-	public @ResponseBody Video postUnLike(@RequestBody Video v) {
-		return v;
-	}
-	
-	@RequestMapping(value = "/video/{id}/likedby", method = RequestMethod.GET)
-	public void getLikedBy(@PathVariable("id") long id, HttpServletResponse response) {
-	}
-	
-	@RequestMapping(value = "/video/search/findByName?title={title}", method = RequestMethod.GET)
-	public void findByName(@PathVariable("title") String title, HttpServletResponse response) {
-	}
-	
-	@RequestMapping(value = "/video/search/findByDurationLessThan?duration={duration}", method = RequestMethod.GET)
-	public void findByDuration(@PathVariable("title") long duration, HttpServletResponse response) {
-	}
 
 	
 
