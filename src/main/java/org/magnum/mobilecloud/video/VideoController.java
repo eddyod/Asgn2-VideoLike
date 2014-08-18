@@ -31,8 +31,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class VideoController {
 	
+	@RequestMapping(value = "/video", method = RequestMethod.GET)
+	public @ResponseBody Video getVideo(@RequestBody Video v) {
+		return v;
+	}
+	
 	@RequestMapping(value = "/video", method = RequestMethod.POST)
-	public @ResponseBody Video addVideo(@RequestBody Video v) {
+	public @ResponseBody Video postVideo(@RequestBody Video v) {
 		return v;
 	}
 	
