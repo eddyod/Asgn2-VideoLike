@@ -21,6 +21,7 @@ package org.magnum.mobilecloud.video;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.magnum.mobilecloud.video.client.VideoSvcApi;
@@ -32,11 +33,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.google.common.collect.Lists;
 
@@ -63,20 +67,10 @@ public class VideoController {
 	 * Collection<Video>. - The return content-type should be application/json,
 	 * which will be the default if you use @ResponseBody
 	 */
-	/*
-	@GET("/video")
-	public Collection<Video> getVideoList() {
-		// Collection<Video> videoList = videos.findCollection();
-		// return videoList;
-		return video.getVideoCollection();
+	@RequestMapping(value = VideoSvcApi.VIDEO_SVC_PATH, method = RequestMethod.GET)
+	public @ResponseBody Collection<Video> getVideoList() {
+		return Lists.newArrayList(videos.findAll());
 	}
-	*/
-	
-	 @RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH, method=RequestMethod.GET)
-	   public @ResponseBody Collection<Video> getVideoList(){
-	      return Lists.newArrayList(videos.findAll());
-	   }
-
 
 	/*
 	 * - The video metadata is provided as an application/json request body. The
@@ -89,20 +83,42 @@ public class VideoController {
 	 * initially created. - You will need to add one or more annotations to the
 	 * Video object in order for it to be persisted with JPA.
 	 */
-	@POST("/video")
-	public Video addVideo(@Body Video v) {
-		// Video video = videoRep.save(v);
-		videos.save(v);
-		return v;
+	@RequestMapping(value = VideoSvcApi.VIDEO_SVC_PATH, method = RequestMethod.POST)
+	public @ResponseBody Video addVideo(@RequestBody Video v) {
+	Video video = videos.save(v);
+	String url = this.getDataUrl(video.getId());
+	video.setUrl(url);
+	videos.save(video);
+	System.out.println("VideoController::addVideo duration of video is " + video.getDuration());
+	return video;
+	}
+	
+	
+
+
+	private String getUrlBaseForLocalServer() {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+				.getRequest();
+		String base = "http://" + request.getServerName()
+				+ ((request.getServerPort() != 80) ? ":" + request.getServerPort() : "");
+		return base;
+	}
+
+	private String getDataUrl(long videoId) {
+		String url = getUrlBaseForLocalServer() + "/video/" + videoId + "/data";
+		return url;
 	}
 
 	/*
 	 * Returns the video with the given id or 404 if the video is not found.
 	 */
 	@GET("/video/{id}")
+	@ResponseStatus(value = HttpStatus.OK)
 	public Video getVideoById(@Path("id") long id, HttpServletResponse response) {
-		Video video = videos.findOne(id);
-		if (video == null) {
+		Video video = null;
+		try {
+			video = videos.findOne(id);
+		} catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
 		return video;
@@ -117,12 +133,6 @@ public class VideoController {
 	 * it persistable. - A user is only allowed to like a video once. If a user
 	 * tries to like a video a second time, the operation should fail and return
 	 * 400 Bad Request.
-	 */
-	/*
-	 * @ResponseStatus(value = HttpStatus.OK)
-	 * 
-	 * @POST("/video/{id}/like") public Void likeVideo(@Path("id") long id) {
-	 * return null; }
 	 */
 	@RequestMapping(value = "/video/{id}/like", method = RequestMethod.POST)
 	public ResponseEntity<Void> likeVideo(@PathVariable("id") long id, Video p) {
@@ -148,12 +158,11 @@ public class VideoController {
 	 * has not previously liked the specified video.
 	 */
 	/*
-	@ResponseStatus(value = HttpStatus.OK)
-	@POST("/video/{id}/unlike")
-	public Void unlikeVideo(@Path("id") long id) {
-		return null;
-	}
-	*/
+	 * @ResponseStatus(value = HttpStatus.OK)
+	 * 
+	 * @POST("/video/{id}/unlike") public Void unlikeVideo(@Path("id") long id)
+	 * { return null; }
+	 */
 	@RequestMapping(value = "/video/{id}/unlike", method = RequestMethod.POST)
 	public ResponseEntity<Void> unlikeVideo(@PathVariable("id") long id, Video p) {
 
@@ -178,10 +187,9 @@ public class VideoController {
 	 * generated.
 	 */
 	/*
-	@GET("/video/{id}/likedby")
-	public Collection<String> getUsersWhoLikedVideo(@Path("id") long id) {
-	}
-	*/
+	 * @GET("/video/{id}/likedby") public Collection<String>
+	 * getUsersWhoLikedVideo(@Path("id") long id) { }
+	 */
 	@RequestMapping(value = "/video/{id}/likedby", method = RequestMethod.POST)
 	public ResponseEntity<Void> getUsersWhoLikedVideo(@PathVariable("id") long id, Video p) {
 		if (!videos.exists(id)) {
@@ -203,32 +211,24 @@ public class VideoController {
 	 * - Returns a list of videos whose titles match the given parameter or an
 	 * empty list if none are found.
 	 */
-	@RequestMapping(value=VideoSvcApi.VIDEO_TITLE_SEARCH_PATH, method=RequestMethod.GET)
-	   public @ResponseBody Collection<Video> findByTitle(
-	         // Tell Spring to use the "title" parameter in the HTTP request's query
-	         // string as the value for the title method parameter
-	         @RequestParam(TITLE_PARAMETER) String title
-	   ){
-	      return videos.findByName(title);
-	   }
+	@RequestMapping(value = VideoSvcApi.VIDEO_TITLE_SEARCH_PATH, method = RequestMethod.GET)
+	public @ResponseBody Collection<Video> findByTitle(
+	// Tell Spring to use the "title" parameter in the HTTP request's query
+	// string as the value for the title method parameter
+			@RequestParam(TITLE_PARAMETER) String title) {
+		return videos.findByName(title);
+	}
 
-	 
 	/*
 	 * - Returns a list of videos whose durations are less than the given
 	 * parameter or an empty list if none are found.
 	 */
-	/*
-	 * @GET("/video/search/findByDurationLessThan?duration={duration}") public
-	 * Collection<Video> findByDurationLessThan(@Query(DURATION_PARAMETER) long
-	 * duration) { return null; }
-	 */
-	@RequestMapping(value="/video/search/findByDurationLessThan?duration={duration}", method=RequestMethod.GET)
-	   public @ResponseBody Collection<Video> findByDurationLessThan(
-	         // Tell Spring to use the "title" parameter in the HTTP request's query
-	         // string as the value for the title method parameter
-	         @RequestParam(DURATION_PARAMETER) long duration
-	   ){
-	      return videos.findByDurationLessThan(duration);
-	   }
+	@RequestMapping(value = VideoSvcApi.VIDEO_DURATION_SEARCH_PATH, method = RequestMethod.GET)
+	public @ResponseBody Collection<Video> findByDurationLessThan(
+			@RequestParam(DURATION_PARAMETER) long duration) {
+		return videos.findByDurationLessThan(duration);
+		
+	}
+	
 
 }
