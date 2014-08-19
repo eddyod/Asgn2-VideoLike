@@ -18,6 +18,8 @@
 
 package org.magnum.mobilecloud.video;
 
+import java.io.IOException;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.Set;
 
@@ -28,7 +30,6 @@ import org.magnum.mobilecloud.video.client.VideoSvcApi;
 import org.magnum.mobilecloud.video.repository.Video;
 import org.magnum.mobilecloud.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -43,11 +44,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.google.common.collect.Lists;
-
-import retrofit.http.Body;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
 
 @Controller
 public class VideoController {
@@ -90,6 +86,7 @@ public class VideoController {
 	video.setUrl(url);
 	videos.save(video);
 	System.out.println("VideoController::addVideo duration of video is " + video.getDuration());
+	//video.setVideoCollection(getVideoList());
 	return video;
 	}
 	
@@ -112,9 +109,8 @@ public class VideoController {
 	/*
 	 * Returns the video with the given id or 404 if the video is not found.
 	 */
-	@GET("/video/{id}")
-	@ResponseStatus(value = HttpStatus.OK)
-	public Video getVideoById(@Path("id") long id, HttpServletResponse response) {
+	@RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH + "/{id}", method=RequestMethod.GET)
+	public @ResponseBody Video getVideoById(@PathVariable("id") long id, HttpServletResponse response){
 		Video video = null;
 		try {
 			video = videos.findOne(id);
@@ -122,6 +118,7 @@ public class VideoController {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
 		return video;
+		
 	}
 
 	/*
@@ -134,22 +131,37 @@ public class VideoController {
 	 * tries to like a video a second time, the operation should fail and return
 	 * 400 Bad Request.
 	 */
-	@RequestMapping(value = "/video/{id}/like", method = RequestMethod.POST)
-	public ResponseEntity<Void> likeVideo(@PathVariable("id") long id, Video p) {
+	@RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH + "/{id}/like", method=RequestMethod.POST)
+	@ResponseStatus(HttpStatus.OK)
+	public @ResponseBody void likeVideo(@PathVariable("id") long id, HttpServletResponse response, Principal user) {
 
 		if (!videos.exists(id)) {
-			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+			try {
+				response.sendError(404);
+				return;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		String username = p.getName();
+		String username = user.getName();
 		Video v = videos.findOne(id);
 		Set<String> likesUsernames = v.getLikesUsernames();
 		// Checks if the user has already liked the video.
 		if (likesUsernames.contains(username)) {
-			return new ResponseEntity<Void>(HttpStatus.BAD_REQUEST);
+			try {
+				response.sendError(400);
+				return;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			long likes = v.getLikes();
+			v.setLikes( ++likes);
+			v.getLikesUsernames().add(username);
 		}
-		// keep track of users have liked a video
-		v.setLikesUsernames(likesUsernames);
-		return new ResponseEntity<Void>(HttpStatus.OK);
+		videos.save(v);
 	}
 
 	/*
@@ -157,29 +169,39 @@ public class VideoController {
 	 * 200 OK on success, 404 if the video is not found, and a 400 if the user
 	 * has not previously liked the specified video.
 	 */
-	/*
-	 * @ResponseStatus(value = HttpStatus.OK)
-	 * 
-	 * @POST("/video/{id}/unlike") public Void unlikeVideo(@Path("id") long id)
-	 * { return null; }
-	 */
-	@RequestMapping(value = "/video/{id}/unlike", method = RequestMethod.POST)
-	public ResponseEntity<Void> unlikeVideo(@PathVariable("id") long id, Video p) {
+	@RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH + "/{id}/unlike", method=RequestMethod.POST)
+	@ResponseStatus(HttpStatus.OK)
+	public @ResponseBody void unlikeVideo(@PathVariable("id") long id, HttpServletResponse response, Principal user) {
 
 		if (!videos.exists(id)) {
-			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+			try {
+				response.sendError(404);
+				return;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		String username = p.getName();
+		String username = user.getName();
 		Video v = videos.findOne(id);
 		Set<String> unlikesUsernames = v.getUnlikesUsernames();
 		// Checks if the user has already liked the video.
 		if (unlikesUsernames.contains(username)) {
-			return new ResponseEntity<Void>(HttpStatus.BAD_REQUEST);
+			try {
+				response.sendError(400);
+				return;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			long likes = v.getLikes();
+			v.setLikes( --likes);
+			v.getUnlikesUsernames().add(username);
 		}
-		// keep track of users have liked a video
-		v.setUnlikesUsernames(unlikesUsernames);
-		return new ResponseEntity<Void>(HttpStatus.OK);
+		videos.save(v);
 	}
+	
 
 	/*
 	 * - Returns a list of the string usernames of the users that have liked the

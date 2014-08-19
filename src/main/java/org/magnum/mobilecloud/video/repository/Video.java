@@ -128,7 +128,7 @@ public class Video {
 	}
 
 	@ElementCollection
-	private Set<String> likesUsernames = new HashSet<String>();
+	private Set<String> likesUsernames;
 
 	public Set<String> getLikesUsernames() {
 		return likesUsernames;
@@ -139,7 +139,7 @@ public class Video {
 	}
 	
 	@ElementCollection
-	private Set<String> unlikesUsernames = new HashSet<String>();
+	private Set<String> unlikesUsernames;
 
 	public Set<String> getUnlikesUsernames() {
 		return unlikesUsernames;
@@ -148,5 +148,6 @@ public class Video {
 	public void setUnlikesUsernames(Set<String> unlikesUsernames) {
 		this.unlikesUsernames = unlikesUsernames;
 	}
+	
 
 }
