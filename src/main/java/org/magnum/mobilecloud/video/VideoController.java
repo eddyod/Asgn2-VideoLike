@@ -222,5 +222,13 @@ public class VideoController {
 	 * Collection<Video> findByDurationLessThan(@Query(DURATION_PARAMETER) long
 	 * duration) { return null; }
 	 */
+	@RequestMapping(value="/video/search/findByDurationLessThan?duration={duration}", method=RequestMethod.GET)
+	   public @ResponseBody Collection<Video> findByDurationLessThan(
+	         // Tell Spring to use the "title" parameter in the HTTP request's query
+	         // string as the value for the title method parameter
+	         @RequestParam(DURATION_PARAMETER) long duration
+	   ){
+	      return videos.findByDurationLessThan(duration);
+	   }
 
 }
