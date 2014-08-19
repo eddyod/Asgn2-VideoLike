@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.magnum.mobilecloud.video.client.VideoSvcApi;
 import org.magnum.mobilecloud.video.repository.Video;
 import org.magnum.mobilecloud.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.google.common.collect.Lists;
 
 import retrofit.http.Body;
 import retrofit.http.GET;
@@ -58,13 +63,20 @@ public class VideoController {
 	 * Collection<Video>. - The return content-type should be application/json,
 	 * which will be the default if you use @ResponseBody
 	 */
-
+	/*
 	@GET("/video")
 	public Collection<Video> getVideoList() {
 		// Collection<Video> videoList = videos.findCollection();
 		// return videoList;
 		return video.getVideoCollection();
 	}
+	*/
+	
+	 @RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH, method=RequestMethod.GET)
+	   public @ResponseBody Collection<Video> getVideoList(){
+	      return Lists.newArrayList(videos.findAll());
+	   }
+
 
 	/*
 	 * - The video metadata is provided as an application/json request body. The
@@ -91,7 +103,7 @@ public class VideoController {
 	public Video getVideoById(@Path("id") long id, HttpServletResponse response) {
 		Video video = videos.findOne(id);
 		if (video == null) {
-			response.setStatus(404);
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
 		return video;
 	}
@@ -191,12 +203,16 @@ public class VideoController {
 	 * - Returns a list of videos whose titles match the given parameter or an
 	 * empty list if none are found.
 	 */
-	/*
-	 * @GET("/video/search/findByName?title={title}") public Collection<Video>
-	 * findByTitle(@Query(TITLE_PARAMETER) String title) { //Collection<Video>
-	 * videos = videoRep.findLike(title); //return videos; return null; }
-	 */
+	@RequestMapping(value=VideoSvcApi.VIDEO_TITLE_SEARCH_PATH, method=RequestMethod.GET)
+	   public @ResponseBody Collection<Video> findByTitle(
+	         // Tell Spring to use the "title" parameter in the HTTP request's query
+	         // string as the value for the title method parameter
+	         @RequestParam(TITLE_PARAMETER) String title
+	   ){
+	      return videos.findByName(title);
+	   }
 
+	 
 	/*
 	 * - Returns a list of videos whose durations are less than the given
 	 * parameter or an empty list if none are found.
