@@ -149,5 +149,17 @@ public class Video {
 		this.unlikesUsernames = unlikesUsernames;
 	}
 	
+	@ElementCollection
+	private Set<String> likedVideo;
+
+	public Set<String> getLikedVideo() {
+		return likedVideo;
+	}
+
+	public void setLikedVideo(Set<String> likedVideo) {
+		this.likedVideo = likedVideo;
+	}
+	
+	
 
 }

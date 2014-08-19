@@ -133,33 +133,27 @@ public class VideoController {
 	 */
 	@RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH + "/{id}/like", method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody void likeVideo(@PathVariable("id") long id, HttpServletResponse response, Principal user) {
+	public @ResponseBody void likeVideo(@PathVariable("id") long id, HttpServletResponse response, Principal user) throws IOException  {
 
 		if (!videos.exists(id)) {
-			try {
 				response.sendError(404);
 				return;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		String username = user.getName();
 		Video v = videos.findOne(id);
 		Set<String> likesUsernames = v.getLikesUsernames();
+		Set<String> happyUsers = v.getLikedVideo();
 		// Checks if the user has already liked the video.
 		if (likesUsernames.contains(username)) {
-			try {
 				response.sendError(400);
-				return;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		} else {
 			long likes = v.getLikes();
 			v.setLikes( ++likes);
 			v.getLikesUsernames().add(username);
+		}
+		if (!happyUsers.contains(username)) {
+			happyUsers.add(username);
+			v.setLikedVideo(happyUsers);
 		}
 		videos.save(v);
 	}
@@ -171,33 +165,28 @@ public class VideoController {
 	 */
 	@RequestMapping(value=VideoSvcApi.VIDEO_SVC_PATH + "/{id}/unlike", method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody void unlikeVideo(@PathVariable("id") long id, HttpServletResponse response, Principal user) {
+	public @ResponseBody void unlikeVideo(@PathVariable("id") long id, HttpServletResponse response, Principal user) throws IOException {
 
 		if (!videos.exists(id)) {
-			try {
 				response.sendError(404);
 				return;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+			} 
 		String username = user.getName();
 		Video v = videos.findOne(id);
 		Set<String> unlikesUsernames = v.getUnlikesUsernames();
+		Set<String> happyUsers = v.getLikedVideo();
 		// Checks if the user has already liked the video.
 		if (unlikesUsernames.contains(username)) {
-			try {
 				response.sendError(400);
 				return;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		} else {
 			long likes = v.getLikes();
 			v.setLikes( --likes);
 			v.getUnlikesUsernames().add(username);
+		}
+		if (happyUsers.contains(username)) {
+			happyUsers.remove(username);
+			v.setLikedVideo(happyUsers);
 		}
 		videos.save(v);
 	}
@@ -213,20 +202,14 @@ public class VideoController {
 	 * getUsersWhoLikedVideo(@Path("id") long id) { }
 	 */
 	@RequestMapping(value = "/video/{id}/likedby", method = RequestMethod.POST)
-	public ResponseEntity<Void> getUsersWhoLikedVideo(@PathVariable("id") long id, Video p) {
+	public Collection<String> getUsersWhoLikedVideo
+	(@PathVariable("id") long id, HttpServletResponse response) throws IOException {
 		if (!videos.exists(id)) {
-			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+			response.sendError(404);
 		}
-		String username = p.getName();
 		Video v = videos.findOne(id);
-		Set<String> unlikesUsernames = v.getUnlikesUsernames();
-		// Checks if the user has already liked the video.
-		if (unlikesUsernames.contains(username)) {
-			return new ResponseEntity<Void>(HttpStatus.BAD_REQUEST);
-		}
-		// keep track of users have liked a video
-		v.setUnlikesUsernames(unlikesUsernames);
-		return new ResponseEntity<Void>(HttpStatus.OK);
+		Collection<String> happyUsers = v.getLikedVideo();
+		return happyUsers;
 	}
 
 	/*
