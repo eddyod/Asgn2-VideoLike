@@ -20,6 +20,7 @@ package org.magnum.mobilecloud.video;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,6 @@ import org.magnum.mobilecloud.video.repository.Video;
 import org.magnum.mobilecloud.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -145,6 +145,7 @@ public class VideoController {
 		// Checks if the user has already liked the video.
 		if (likesUsernames.contains(username)) {
 				response.sendError(400);
+				return;
 		} else {
 			long likes = v.getLikes();
 			v.setLikes( ++likes);
@@ -177,7 +178,7 @@ public class VideoController {
 		// Checks if the user has already liked the video.
 		if (unlikesUsernames.contains(username)) {
 				response.sendError(400);
-				//return;
+				return;
 		} else {
 			long likes = v.getLikes();
 			v.setLikes( --likes);
@@ -196,19 +197,18 @@ public class VideoController {
 	 * specified video. If the video is not found, a 404 error should be
 	 * generated.
 	 */
-	/*
-	 * @GET("/video/{id}/likedby") public Collection<String>
-	 * getUsersWhoLikedVideo(@Path("id") long id) { }
-	 */
-	@RequestMapping(value = VideoSvcApi.VIDEO_SVC_PATH + "/{id}/likedby", method = RequestMethod.POST)
+	@RequestMapping(value = VideoSvcApi.VIDEO_SVC_PATH + "/{id}/likedby", method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.OK)
-	public Collection<String> getUsersWhoLikedVideo
+	public  @ResponseBody Collection<String> getUsersWhoLikedVideo
 	(@PathVariable("id") long id, HttpServletResponse response) throws IOException {
-		if (!videos.exists(id)) {
-			response.sendError(404);
+		Collection<String> happyUsers = new ArrayList<String>();
+		if (videos.exists(id)) {
+			Video v = videos.findOne(id);
+			happyUsers = v.getLikedVideo();
+		} else {
+			response.sendError(404);			
 		}
-		Video v = videos.findOne(id);
-		Collection<String> happyUsers = v.getLikedVideo();
+		
 		return happyUsers;
 	}
 
