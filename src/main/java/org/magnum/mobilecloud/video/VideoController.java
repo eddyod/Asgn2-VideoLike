@@ -21,6 +21,7 @@ package org.magnum.mobilecloud.video;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -80,13 +81,11 @@ public class VideoController {
 	 * Video object in order for it to be persisted with JPA.
 	 */
 	@RequestMapping(value = VideoSvcApi.VIDEO_SVC_PATH, method = RequestMethod.POST)
+	@ResponseStatus(HttpStatus.OK)
 	public @ResponseBody Video addVideo(@RequestBody Video v) {
 	Video video = videos.save(v);
 	String url = this.getDataUrl(video.getId());
 	video.setUrl(url);
-	videos.save(video);
-	System.out.println("VideoController::addVideo duration of video is " + video.getDuration());
-	//video.setVideoCollection(getVideoList());
 	return video;
 	}
 	
@@ -142,7 +141,7 @@ public class VideoController {
 		String username = user.getName();
 		Video v = videos.findOne(id);
 		Set<String> likesUsernames = v.getLikesUsernames();
-		Set<String> happyUsers = v.getLikedVideo();
+		List<String> happyUsers = v.getLikedVideo();
 		// Checks if the user has already liked the video.
 		if (likesUsernames.contains(username)) {
 				response.sendError(400);
@@ -174,11 +173,11 @@ public class VideoController {
 		String username = user.getName();
 		Video v = videos.findOne(id);
 		Set<String> unlikesUsernames = v.getUnlikesUsernames();
-		Set<String> happyUsers = v.getLikedVideo();
+		List<String> happyUsers = v.getLikedVideo();
 		// Checks if the user has already liked the video.
 		if (unlikesUsernames.contains(username)) {
 				response.sendError(400);
-				return;
+				//return;
 		} else {
 			long likes = v.getLikes();
 			v.setLikes( --likes);
@@ -201,7 +200,8 @@ public class VideoController {
 	 * @GET("/video/{id}/likedby") public Collection<String>
 	 * getUsersWhoLikedVideo(@Path("id") long id) { }
 	 */
-	@RequestMapping(value = "/video/{id}/likedby", method = RequestMethod.POST)
+	@RequestMapping(value = VideoSvcApi.VIDEO_SVC_PATH + "/{id}/likedby", method = RequestMethod.POST)
+	@ResponseStatus(HttpStatus.OK)
 	public Collection<String> getUsersWhoLikedVideo
 	(@PathVariable("id") long id, HttpServletResponse response) throws IOException {
 		if (!videos.exists(id)) {

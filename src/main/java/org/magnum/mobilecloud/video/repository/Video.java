@@ -2,7 +2,7 @@ package org.magnum.mobilecloud.video.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.ElementCollection;
@@ -150,13 +150,13 @@ public class Video {
 	}
 	
 	@ElementCollection
-	private Set<String> likedVideo;
+	private List<String> likedVideo;
 
-	public Set<String> getLikedVideo() {
+	public List<String> getLikedVideo() {
 		return likedVideo;
 	}
 
-	public void setLikedVideo(Set<String> likedVideo) {
+	public void setLikedVideo(List<String> likedVideo) {
 		this.likedVideo = likedVideo;
 	}
 	
